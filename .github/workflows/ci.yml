@@ -92,5 +92,26 @@ jobs:
           target/x86_64-unknown-linux-gnu/release/telegram-claude-yolo-bot*
           !target/x86_64-unknown-linux-gnu/release/telegram-claude-yolo-bot.d
 
+  publish:
+    if: github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-edit
+        run: cargo install cargo-edit
+
+      - name: Bump version
+        run: cargo set-version --bump patch
+
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: cargo publish --no-verify
+
 
 

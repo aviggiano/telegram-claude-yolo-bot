@@ -4,10 +4,10 @@ A Rust-based Telegram bot that bridges Claude CLI interactions, allowing you to 
 
 ## Installation
 
-Install directly from GitHub using cargo:
+Install from [crates.io](https://crates.io) using cargo:
 
 ```bash
-cargo install --git https://github.com/aviggiano/telegram-claude-yolo-bot
+cargo install telegram-claude-yolo-bot
 ```
 
 ### From source
@@ -174,17 +174,16 @@ This project is based on the original Python implementation by [@devtooligan](ht
 
 The bot includes automatic update functionality that:
 
-- **Monitors for updates**: Checks the main branch every 5 minutes for new commits
-- **Auto-restarts**: Automatically pulls changes, rebuilds, and restarts when updates are detected
+- **Monitors for updates**: Checks crates.io every 5 minutes for new versions
+- **Auto-restarts**: Automatically installs the latest release and restarts when updates are detected
 - **Zero-downtime updates**: Seamlessly updates the bot without manual intervention
 
 ### How it works:
 
-1. The bot periodically fetches from `origin/main`
-2. Compares current commit hash with remote commit hash
-3. If changes are detected:
-   - Pulls the latest changes
-   - Rebuilds the application with `cargo build --release`
+1. The bot periodically queries crates.io for the newest version
+2. Compares it with the currently running version
+3. If a new version is available:
+   - Installs it with `cargo install telegram-claude-yolo-bot --force`
    - Restarts the bot process
 
 ### Service Installation (Recommended)
