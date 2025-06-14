@@ -126,8 +126,8 @@ jobs:
     
     - name: Commit version bump
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "agfviggiano@gmail.com"
+        git config --local user.name "Antonio Guilherme Ferreira Viggiano"
         git add Cargo.toml Cargo.lock
         git commit -m "Bump version [skip ci]" || exit 0
         git push
