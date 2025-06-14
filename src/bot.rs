@@ -1,9 +1,6 @@
 use anyhow::Result;
 use log::{error, info, warn};
-use serde_json::Value;
-use std::process::Stdio;
 use teloxide::{prelude::*, utils::command::BotCommands};
-use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 
 #[derive(BotCommands, Clone)]
@@ -89,42 +86,21 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
 async fn execute_claude_command(prompt: &str) -> Result<String> {
     info!("Executing Claude command: {}", prompt);
 
-    let mut child = Command::new("claude")
+    let output = Command::new("claude")
         .arg("--dangerously-skip-permissions")
-        .arg("--output-format")
-        .arg("json")
         .arg(prompt)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()?;
+        .output()
+        .await?;
 
-    let stdout = child.stdout.take().unwrap();
-    let mut reader = BufReader::new(stdout);
-    let mut output = String::new();
-    let mut line = String::new();
-
-    while reader.read_line(&mut line).await? > 0 {
-        if let Ok(json_value) = serde_json::from_str::<Value>(&line) {
-            if let Some(content) = json_value.get("content") {
-                if let Some(text) = content.as_str() {
-                    output.push_str(text);
-                }
-            } else if let Some(error) = json_value.get("error") {
-                if let Some(error_text) = error.as_str() {
-                    return Err(anyhow::anyhow!("Claude error: {}", error_text));
-                }
-            }
-        }
-        line.clear();
-    }
-
-    let exit_status = child.wait().await?;
-    if !exit_status.success() {
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!(
-            "Claude command failed with exit code: {}",
-            exit_status
+            "Claude command failed with exit code: {}\nError: {}",
+            output.status,
+            stderr
         ));
     }
 
-    Ok(output)
+    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+    Ok(stdout)
 }

@@ -60,12 +60,6 @@ telegram-claude-yolo-bot start --token YOUR_BOT_TOKEN --chat-id YOUR_CHAT_ID
 
 Create a `.env` file in your project directory:
 
-```bash
-cp .env.example .env
-```
-
-Edit the `.env` file with your values:
-
 ```env
 TELEGRAM_BOT_TOKEN=your_bot_token_here
 TELEGRAM_CHAT_ID=your_chat_id_here
@@ -87,50 +81,29 @@ export TELEGRAM_CHAT_ID=your_chat_id_here
 telegram-claude-yolo-bot start
 ```
 
-### Daemon Installation
+### Running with Screen (Recommended)
 
-Install as a system daemon (requires sudo):
-
-```bash
-# Using .env file (recommended)
-sudo telegram-claude-yolo-bot install
-
-# Or with CLI arguments
-sudo telegram-claude-yolo-bot install --token YOUR_BOT_TOKEN --chat-id YOUR_CHAT_ID
-```
-
-Start the daemon:
+To keep the bot running in the background, use screen:
 
 ```bash
-sudo systemctl start telegram-claude-yolo-bot
+screen -d -L -m telegram-claude-yolo-bot start
 ```
 
-Check daemon status:
-
-```bash
-telegram-claude-yolo-bot status
-```
-
-Uninstall daemon:
-
-```bash
-sudo telegram-claude-yolo-bot uninstall
-```
+This will:
+- `-d`: Start screen detached
+- `-L`: Log output to a file
+- `-m`: Force creation of a new session
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
 | `start` | Start the Telegram bot |
-| `install` | Install as system daemon |
-| `uninstall` | Remove system daemon |
-| `status` | Show daemon status |
 
 ### Command Options
 
 - `--token, -t`: Telegram bot token (optional if set in .env or environment)
-- `--chat-id, -c`: Authorized chat ID (optional if set in .env or environment)  
-- `--daemon, -d`: Run as daemon process
+- `--chat-id, -c`: Authorized chat ID (optional if set in .env or environment)
 
 ## Telegram Bot Commands
 
