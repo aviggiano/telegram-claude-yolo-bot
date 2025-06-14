@@ -8,6 +8,18 @@ use teloxide::{prelude::*, utils::command::BotCommands};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 
+fn escape_markdown_v2(text: &str) -> String {
+    text.chars()
+        .map(|c| match c {
+            '_' | '*' | '[' | ']' | '(' | ')' | '~' | '`' | '>' | '#' | '+' | '-' | '=' | '|'
+            | '{' | '}' | '.' | '!' => {
+                format!("\\{}", c)
+            }
+            c => c.to_string(),
+        })
+        .collect()
+}
+
 #[derive(BotCommands, Clone)]
 #[command(
     rename_rule = "lowercase",
@@ -59,13 +71,17 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
             BotCommand::Help => {
                 let help_text = BotCommand::descriptions().to_string();
                 log_to_screenlog("BOT", &help_text).ok();
-                bot.send_message(msg.chat.id, help_text).await?;
+                bot.send_message(msg.chat.id, help_text)
+                    .parse_mode(teloxide::types::ParseMode::MarkdownV2)
+                    .await?;
             }
             BotCommand::Start => {
                 let start_text =
                     "Claude YOLO Bot is ready! Send any message to execute Claude commands.";
                 log_to_screenlog("BOT", start_text).ok();
-                bot.send_message(msg.chat.id, start_text).await?;
+                bot.send_message(msg.chat.id, start_text)
+                    .parse_mode(teloxide::types::ParseMode::MarkdownV2)
+                    .await?;
             }
         }
     } else {
@@ -77,7 +93,9 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
             error!("Claude command failed: {}", e);
             let error_msg = format!("Error: {}", e);
             log_to_screenlog("BOT", &error_msg).ok();
-            bot.send_message(msg.chat.id, error_msg).await?;
+            bot.send_message(msg.chat.id, escape_markdown_v2(&error_msg))
+                .parse_mode(teloxide::types::ParseMode::MarkdownV2)
+                .await?;
         }
     }
 
@@ -105,7 +123,10 @@ async fn execute_claude_command_streaming(prompt: &str, bot: Bot, chat_id: ChatI
     let mut last_send_time = std::time::Instant::now();
 
     // Send initial message to show bot is processing
-    let mut current_message = bot.send_message(chat_id, "🤖 Processing...").await?;
+    let mut current_message = bot
+        .send_message(chat_id, "🤖 Processing...")
+        .parse_mode(teloxide::types::ParseMode::MarkdownV2)
+        .await?;
 
     while let Some(line) = reader.next_line().await? {
         buffer.push_str(&line);
@@ -119,20 +140,25 @@ async fn execute_claude_command_streaming(prompt: &str, bot: Bot, chat_id: ChatI
         if should_send && !buffer.trim().is_empty() {
             // Edit the message with accumulated output
             let display_text = if accumulated_output.len() > 4000 {
-                format!(
+                escape_markdown_v2(&format!(
                     "...{}",
                     &accumulated_output[accumulated_output.len() - 3900..]
-                )
+                ))
             } else {
-                accumulated_output.clone()
+                escape_markdown_v2(&accumulated_output)
             };
 
             if let Err(_e) = bot
                 .edit_message_text(chat_id, current_message.id, display_text)
+                .parse_mode(teloxide::types::ParseMode::MarkdownV2)
                 .await
             {
                 // If edit fails (message too old or identical), send new message
-                match bot.send_message(chat_id, &buffer).await {
+                match bot
+                    .send_message(chat_id, escape_markdown_v2(&buffer))
+                    .parse_mode(teloxide::types::ParseMode::MarkdownV2)
+                    .await
+                {
                     Ok(new_msg) => current_message = new_msg,
                     Err(send_err) => warn!("Failed to send message: {}", send_err),
                 }
@@ -146,19 +172,22 @@ async fn execute_claude_command_streaming(prompt: &str, bot: Bot, chat_id: ChatI
     // Send any remaining buffer content
     if !buffer.trim().is_empty() {
         let display_text = if accumulated_output.len() > 4000 {
-            format!(
+            escape_markdown_v2(&format!(
                 "...{}",
                 &accumulated_output[accumulated_output.len() - 3900..]
-            )
+            ))
         } else {
-            accumulated_output.clone()
+            escape_markdown_v2(&accumulated_output)
         };
 
         if let Err(_e) = bot
             .edit_message_text(chat_id, current_message.id, display_text)
+            .parse_mode(teloxide::types::ParseMode::MarkdownV2)
             .await
         {
-            bot.send_message(chat_id, &buffer).await?;
+            bot.send_message(chat_id, escape_markdown_v2(&buffer))
+                .parse_mode(teloxide::types::ParseMode::MarkdownV2)
+                .await?;
         }
     }
 
@@ -181,6 +210,7 @@ async fn execute_claude_command_streaming(prompt: &str, bot: Bot, chat_id: ChatI
     if accumulated_output.trim().is_empty() {
         let no_output_msg = "✅ Claude command completed (no output)";
         bot.edit_message_text(chat_id, current_message.id, no_output_msg)
+            .parse_mode(teloxide::types::ParseMode::MarkdownV2)
             .await?;
     }
 
