@@ -53,23 +53,7 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
                     .await?;
             }
             BotCommand::Start => {
-                let warning = "🚨 **FOOTGUN ALERT: SERIOUS SECURITY RISKS** 🚨\n\n\
-                              This bot executes Claude commands DIRECTLY on your host system with NO SANDBOXING.\n\n\
-                              **POTENTIAL RISKS:**\n\
-                              • **FULL SYSTEM COMPROMISE** - Claude can execute ANY command on your system\n\
-                              • **DATA EXFILTRATION** - Access to all files and system resources\n\
-                              • **REMOTE CODE EXECUTION** - Potential for malicious code execution\n\
-                              • **PRIVILEGE ESCALATION** - Commands run with your user privileges\n\n\
-                              **RECOMMENDED PRECAUTIONS:**\n\
-                              • Run in a isolated Docker container or VM\n\
-                              • Use a dedicated, restricted user account\n\
-                              • Monitor all system activity\n\
-                              • Never run on production systems\n\n\
-                              **USE AT YOUR OWN RISK!**\n\n\
-                              Send any message to execute Claude commands.";
-
-                bot.send_message(msg.chat.id, warning)
-                    .parse_mode(teloxide::types::ParseMode::MarkdownV2)
+                bot.send_message(msg.chat.id, "Claude YOLO Bot is ready! Send any message to execute Claude commands.")
                     .await?;
             }
         }
