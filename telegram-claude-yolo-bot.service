@@ -6,14 +6,13 @@ Wants=network.target
 [Service]
 Type=simple
 User=ubuntu
-WorkingDirectory=/home/ubuntu/telegram-claude-yolo-bot
-ExecStart=/home/ubuntu/telegram-claude-yolo-bot/target/release/telegram-claude-yolo-bot start
+ExecStart=/usr/local/bin/telegram-claude-yolo-bot start
 Restart=always
 RestartSec=5
 Environment=RUST_LOG=info
 
 # Load environment variables from .env file
-EnvironmentFile=-/home/ubuntu/telegram-claude-yolo-bot/.env
+EnvironmentFile=-/etc/telegram-claude-yolo-bot/.env
 
 [Install]
 WantedBy=multi-user.target
