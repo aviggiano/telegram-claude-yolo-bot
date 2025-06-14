@@ -26,6 +26,7 @@ log = "0.4"
 env_logger = "0.10"
 dirs = "5.0"
 dotenv = "0.15"
+chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]
 tokio-test = "0.4"
