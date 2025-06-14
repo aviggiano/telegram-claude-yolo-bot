@@ -53,8 +53,11 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
                     .await?;
             }
             BotCommand::Start => {
-                bot.send_message(msg.chat.id, "Claude YOLO Bot is ready! Send any message to execute Claude commands.")
-                    .await?;
+                bot.send_message(
+                    msg.chat.id,
+                    "Claude YOLO Bot is ready! Send any message to execute Claude commands.",
+                )
+                .await?;
             }
         }
     } else {
