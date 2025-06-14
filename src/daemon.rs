@@ -63,12 +63,10 @@ WantedBy=multi-user.target
     fs::write(&service_path, service_content)?;
 
     // Reload systemd and enable the service
-    Command::new("systemctl")
-        .args(&["daemon-reload"])
-        .status()?;
+    Command::new("systemctl").args(["daemon-reload"]).status()?;
 
     Command::new("systemctl")
-        .args(&["enable", SERVICE_NAME])
+        .args(["enable", SERVICE_NAME])
         .status()?;
 
     println!("Service installed at: {}", service_path);
@@ -90,11 +88,11 @@ pub fn uninstall_daemon() -> Result<()> {
 
     // Stop and disable the service
     let _ = Command::new("systemctl")
-        .args(&["stop", SERVICE_NAME])
+        .args(["stop", SERVICE_NAME])
         .status();
 
     let _ = Command::new("systemctl")
-        .args(&["disable", SERVICE_NAME])
+        .args(["disable", SERVICE_NAME])
         .status();
 
     // Remove the service file
@@ -104,16 +102,14 @@ pub fn uninstall_daemon() -> Result<()> {
     }
 
     // Reload systemd
-    Command::new("systemctl")
-        .args(&["daemon-reload"])
-        .status()?;
+    Command::new("systemctl").args(["daemon-reload"]).status()?;
 
     Ok(())
 }
 
 pub fn show_status() {
     let output = Command::new("systemctl")
-        .args(&["status", SERVICE_NAME, "--no-pager"])
+        .args(["status", SERVICE_NAME, "--no-pager"])
         .output();
 
     match output {

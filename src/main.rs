@@ -70,11 +70,9 @@ async fn main() {
                     eprintln!("Failed to start daemon: {}", e);
                     process::exit(1);
                 }
-            } else {
-                if let Err(e) = bot::start_bot(token, chat_id).await {
-                    eprintln!("Failed to start bot: {}", e);
-                    process::exit(1);
-                }
+            } else if let Err(e) = bot::start_bot(token, chat_id).await {
+                eprintln!("Failed to start bot: {}", e);
+                process::exit(1);
             }
         }
         Commands::Install { token, chat_id } => {

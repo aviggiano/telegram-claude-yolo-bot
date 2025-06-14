@@ -10,6 +10,7 @@ pub struct Config {
 }
 
 impl Config {
+    #[allow(dead_code)]
     pub fn load() -> Result<Self> {
         let config_path = get_config_path()?;
 
@@ -25,6 +26,7 @@ impl Config {
         Ok(config)
     }
 
+    #[allow(dead_code)]
     pub fn save(&self) -> Result<()> {
         let config_path = get_config_path()?;
 
@@ -38,6 +40,7 @@ impl Config {
     }
 }
 
+#[allow(dead_code)]
 fn get_config_path() -> Result<PathBuf> {
     let mut path = dirs::config_dir()
         .ok_or_else(|| anyhow::anyhow!("Unable to determine config directory"))?;
