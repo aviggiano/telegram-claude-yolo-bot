@@ -209,3 +209,4 @@ This ensures the bot automatically starts on boot and restarts on crashes or upd
 ## Disclaimer
 
 This software is provided "as is" without warranty. The authors are not responsible for any damage or security breaches that may occur from using this software. Use at your own risk and always follow security best practices.
+
