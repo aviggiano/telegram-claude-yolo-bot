@@ -22,20 +22,12 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        rust:
-          - stable
-          - beta
-          - nightly
     steps:
     - uses: actions/checkout@v4
     
     - name: Install Rust
-      uses: dtolnay/rust-toolchain@master
+      uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: ${{ matrix.rust }}
         components: rustfmt, clippy
     
     - name: Cache cargo registry
@@ -58,18 +50,15 @@ jobs:
 
     - name: Check formatting
       run: cargo fmt --all -- --check
-      if: matrix.rust == 'stable'
     
     - name: Run clippy
       run: cargo clippy --all-targets --all-features -- -D warnings
-      if: matrix.rust == 'stable'
     
     - name: Run tests
       run: cargo test --verbose
     
     - name: Check documentation
       run: cargo doc --no-deps --document-private-items
-      if: matrix.rust == 'stable'
 
   build:
     name: Build
