@@ -47,11 +47,14 @@ async fn main() {
 }
 
 fn get_config_values() -> Result<(String, i64), String> {
-    let token = env::var("TELEGRAM_BOT_TOKEN")
-        .map_err(|_| "Telegram bot token not provided. Set TELEGRAM_BOT_TOKEN environment variable".to_string())?;
+    let token = env::var("TELEGRAM_BOT_TOKEN").map_err(|_| {
+        "Telegram bot token not provided. Set TELEGRAM_BOT_TOKEN environment variable".to_string()
+    })?;
 
     let chat_id = env::var("TELEGRAM_CHAT_ID")
-        .map_err(|_| "Telegram chat ID not provided. Set TELEGRAM_CHAT_ID environment variable".to_string())?
+        .map_err(|_| {
+            "Telegram chat ID not provided. Set TELEGRAM_CHAT_ID environment variable".to_string()
+        })?
         .parse::<i64>()
         .map_err(|_| "Invalid TELEGRAM_CHAT_ID format. Must be a valid integer".to_string())?;
 

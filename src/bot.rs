@@ -1,11 +1,11 @@
+use crate::updater::AutoUpdater;
 use anyhow::Result;
+use chrono::Utc;
 use log::{error, info, warn};
-use teloxide::{prelude::*, utils::command::BotCommands};
-use tokio::process::Command;
 use std::fs::OpenOptions;
 use std::io::Write;
-use chrono::Utc;
-use crate::updater::AutoUpdater;
+use teloxide::{prelude::*, utils::command::BotCommands};
+use tokio::process::Command;
 
 #[derive(BotCommands, Clone)]
 #[command(
@@ -58,32 +58,30 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
             BotCommand::Help => {
                 let help_text = BotCommand::descriptions().to_string();
                 log_to_screenlog("BOT", &help_text).ok();
-                bot.send_message(msg.chat.id, help_text)
-                    .await?;
+                bot.send_message(msg.chat.id, help_text).await?;
             }
             BotCommand::Start => {
-                let start_text = "Claude YOLO Bot is ready! Send any message to execute Claude commands.";
+                let start_text =
+                    "Claude YOLO Bot is ready! Send any message to execute Claude commands.";
                 log_to_screenlog("BOT", start_text).ok();
-                bot.send_message(msg.chat.id, start_text)
-                .await?;
+                bot.send_message(msg.chat.id, start_text).await?;
             }
         }
     } else {
         // Log user input
         log_to_screenlog("USER", text).ok();
-        
+
         // Execute Claude command
         match execute_claude_command(text).await {
             Ok(output) => {
                 if output.is_empty() {
                     let no_output_msg = "No output received from Claude.";
                     log_to_screenlog("BOT", no_output_msg).ok();
-                    bot.send_message(msg.chat.id, no_output_msg)
-                        .await?;
+                    bot.send_message(msg.chat.id, no_output_msg).await?;
                 } else {
                     // Log Claude's full output
                     log_to_screenlog("CLAUDE", &output).ok();
-                    
+
                     // Split long messages to respect Telegram's 4096 character limit
                     for chunk in output.chars().collect::<Vec<char>>().chunks(4000) {
                         let chunk_str: String = chunk.iter().collect();
@@ -95,8 +93,7 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
                 error!("Claude command failed: {}", e);
                 let error_msg = format!("Error: {}", e);
                 log_to_screenlog("BOT", &error_msg).ok();
-                bot.send_message(msg.chat.id, error_msg)
-                    .await?;
+                bot.send_message(msg.chat.id, error_msg).await?;
             }
         }
     }
@@ -129,14 +126,14 @@ async fn execute_claude_command(prompt: &str) -> Result<String> {
 fn log_to_screenlog(message_type: &str, content: &str) -> Result<()> {
     let timestamp = Utc::now().format("%Y-%m-%d %H:%M:%S UTC");
     let log_entry = format!("[{}] {}: {}\n", timestamp, message_type, content);
-    
+
     let mut file = OpenOptions::new()
         .create(true)
         .append(true)
         .open("screenlog.0")?;
-    
+
     file.write_all(log_entry.as_bytes())?;
     file.flush()?;
-    
+
     Ok(())
 }

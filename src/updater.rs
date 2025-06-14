@@ -1,5 +1,5 @@
 use anyhow::Result;
-use log::{info, warn, error};
+use log::{error, info, warn};
 use std::process::Stdio;
 use tokio::process::Command;
 use tokio::time::{sleep, Duration};
@@ -16,11 +16,14 @@ impl AutoUpdater {
     }
 
     pub async fn start_monitoring(&self) {
-        info!("Starting auto-update monitoring with {} minute intervals", self.update_interval.as_secs() / 60);
-        
+        info!(
+            "Starting auto-update monitoring with {} minute intervals",
+            self.update_interval.as_secs() / 60
+        );
+
         loop {
             sleep(self.update_interval).await;
-            
+
             match self.check_for_updates().await {
                 Ok(has_updates) => {
                     if has_updates {
@@ -42,27 +45,27 @@ impl AutoUpdater {
 
         // Get current commit hash
         let current_commit = self.get_current_commit().await?;
-        
+
         // Fetch latest changes
         self.fetch_origin().await?;
-        
+
         // Get latest commit hash from origin/main
         let latest_commit = self.get_remote_commit().await?;
-        
+
         let has_updates = current_commit != latest_commit;
-        
+
         if has_updates {
             info!("Updates available: {} -> {}", current_commit, latest_commit);
         } else {
             info!("No updates available. Current commit: {}", current_commit);
         }
-        
+
         Ok(has_updates)
     }
 
     async fn get_current_commit(&self) -> Result<String> {
         let output = Command::new("git")
-            .args(&["rev-parse", "HEAD"])
+            .args(["rev-parse", "HEAD"])
             .output()
             .await?;
 
@@ -75,7 +78,7 @@ impl AutoUpdater {
 
     async fn fetch_origin(&self) -> Result<()> {
         let output = Command::new("git")
-            .args(&["fetch", "origin", "main"])
+            .args(["fetch", "origin", "main"])
             .output()
             .await?;
 
@@ -89,7 +92,7 @@ impl AutoUpdater {
 
     async fn get_remote_commit(&self) -> Result<String> {
         let output = Command::new("git")
-            .args(&["rev-parse", "origin/main"])
+            .args(["rev-parse", "origin/main"])
             .output()
             .await?;
 
@@ -102,10 +105,10 @@ impl AutoUpdater {
 
     async fn restart_application(&self) -> Result<()> {
         info!("Pulling latest changes...");
-        
+
         // Pull latest changes
         let pull_output = Command::new("git")
-            .args(&["pull", "origin", "main"])
+            .args(["pull", "origin", "main"])
             .output()
             .await?;
 
@@ -115,10 +118,10 @@ impl AutoUpdater {
         }
 
         info!("Building updated application...");
-        
+
         // Build the application
         let build_output = Command::new("cargo")
-            .args(&["build", "--release"])
+            .args(["build", "--release"])
             .output()
             .await?;
 
@@ -128,13 +131,13 @@ impl AutoUpdater {
         }
 
         info!("Restarting application...");
-        
+
         // Restart the application using exec to replace current process
         let current_exe = std::env::current_exe()?;
         let args: Vec<String> = std::env::args().collect();
-        
+
         Command::new(&current_exe)
-            .args(&args[1..])  // Skip the program name
+            .args(&args[1..]) // Skip the program name
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
