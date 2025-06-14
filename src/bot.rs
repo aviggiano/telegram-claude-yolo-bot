@@ -6,6 +6,7 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use teloxide::{prelude::*, utils::command::BotCommands};
 use tokio::process::Command;
+use tokio::io::{AsyncBufReadExt, BufReader};
 
 #[derive(BotCommands, Clone)]
 #[command(
@@ -71,45 +72,86 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
         // Log user input
         log_to_screenlog("USER", text).ok();
 
-        // Execute Claude command
-        match execute_claude_command(text).await {
-            Ok(output) => {
-                if output.is_empty() {
-                    let no_output_msg = "No output received from Claude.";
-                    log_to_screenlog("BOT", no_output_msg).ok();
-                    bot.send_message(msg.chat.id, no_output_msg).await?;
-                } else {
-                    // Log Claude's full output
-                    log_to_screenlog("CLAUDE", &output).ok();
-
-                    // Split long messages to respect Telegram's 4096 character limit
-                    for chunk in output.chars().collect::<Vec<char>>().chunks(4000) {
-                        let chunk_str: String = chunk.iter().collect();
-                        bot.send_message(msg.chat.id, chunk_str).await?;
-                    }
-                }
-            }
-            Err(e) => {
-                error!("Claude command failed: {}", e);
-                let error_msg = format!("Error: {}", e);
-                log_to_screenlog("BOT", &error_msg).ok();
-                bot.send_message(msg.chat.id, error_msg).await?;
-            }
+        // Execute Claude command with real-time streaming
+        if let Err(e) = execute_claude_command_streaming(text, bot.clone(), msg.chat.id).await {
+            error!("Claude command failed: {}", e);
+            let error_msg = format!("Error: {}", e);
+            log_to_screenlog("BOT", &error_msg).ok();
+            bot.send_message(msg.chat.id, error_msg).await?;
         }
     }
 
     Ok(())
 }
 
-async fn execute_claude_command(prompt: &str) -> Result<String> {
-    info!("Executing Claude command: {}", prompt);
+async fn execute_claude_command_streaming(prompt: &str, bot: Bot, chat_id: ChatId) -> Result<()> {
+    info!("Executing Claude command with streaming: {}", prompt);
 
-    let output = Command::new("claude")
+    let mut child = Command::new("claude")
         .arg("--dangerously-skip-permissions")
         .arg(prompt)
-        .output()
-        .await?;
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()?;
 
+    let stdout = child.stdout.take().ok_or_else(|| {
+        anyhow::anyhow!("Failed to capture stdout")
+    })?;
+
+    let mut reader = BufReader::new(stdout).lines();
+    let mut accumulated_output = String::new();
+    let mut buffer = String::new();
+    let mut last_send_time = std::time::Instant::now();
+    
+    // Send initial message to show bot is processing
+    let mut current_message = bot.send_message(chat_id, "🤖 Processing...").await?;
+
+    while let Some(line) = reader.next_line().await? {
+        buffer.push_str(&line);
+        buffer.push('\n');
+        accumulated_output.push_str(&line);
+        accumulated_output.push('\n');
+
+        // Send updates every 1 second or when buffer gets large
+        let should_send = last_send_time.elapsed().as_secs() >= 1 || buffer.len() > 2000;
+        
+        if should_send && !buffer.trim().is_empty() {
+            // Edit the message with accumulated output
+            let display_text = if accumulated_output.len() > 4000 {
+                format!("...{}", &accumulated_output[accumulated_output.len()-3900..])
+            } else {
+                accumulated_output.clone()
+            };
+
+            if let Err(_e) = bot.edit_message_text(chat_id, current_message.id, display_text).await {
+                // If edit fails (message too old or identical), send new message
+                match bot.send_message(chat_id, &buffer).await {
+                    Ok(new_msg) => current_message = new_msg,
+                    Err(send_err) => warn!("Failed to send message: {}", send_err),
+                }
+            }
+            
+            buffer.clear();
+            last_send_time = std::time::Instant::now();
+        }
+    }
+
+    // Send any remaining buffer content
+    if !buffer.trim().is_empty() {
+        let display_text = if accumulated_output.len() > 4000 {
+            format!("...{}", &accumulated_output[accumulated_output.len()-3900..])
+        } else {
+            accumulated_output.clone()
+        };
+
+        if let Err(_e) = bot.edit_message_text(chat_id, current_message.id, display_text).await {
+            bot.send_message(chat_id, &buffer).await?;
+        }
+    }
+
+    // Wait for the process to complete and check exit status
+    let output = child.wait_with_output().await?;
+    
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         return Err(anyhow::anyhow!(
@@ -119,8 +161,16 @@ async fn execute_claude_command(prompt: &str) -> Result<String> {
         ));
     }
 
-    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-    Ok(stdout)
+    // Log the complete output
+    log_to_screenlog("CLAUDE", &accumulated_output).ok();
+
+    // Send final completion message if no output was received
+    if accumulated_output.trim().is_empty() {
+        let no_output_msg = "✅ Claude command completed (no output)";
+        bot.edit_message_text(chat_id, current_message.id, no_output_msg).await?;
+    }
+
+    Ok(())
 }
 
 fn log_to_screenlog(message_type: &str, content: &str) -> Result<()> {
