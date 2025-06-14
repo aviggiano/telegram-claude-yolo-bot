@@ -209,9 +209,13 @@ async fn execute_claude_command_streaming(prompt: &str, bot: Bot, chat_id: ChatI
     // Send final completion message if no output was received
     if accumulated_output.trim().is_empty() {
         let no_output_msg = "✅ Claude command completed (no output)";
-        bot.edit_message_text(chat_id, current_message.id, escape_markdown_v2(no_output_msg))
-            .parse_mode(teloxide::types::ParseMode::MarkdownV2)
-            .await?;
+        bot.edit_message_text(
+            chat_id,
+            current_message.id,
+            escape_markdown_v2(no_output_msg),
+        )
+        .parse_mode(teloxide::types::ParseMode::MarkdownV2)
+        .await?;
     }
 
     Ok(())
