@@ -2,10 +2,13 @@
 name = "telegram-claude-yolo-bot"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["aviggiano"]
 description = "A Telegram bot that bridges Claude CLI interactions"
 license = "MIT"
-repository = "https://github.com/your-username/telegram-claude-yolo-bot"
+repository = "https://github.com/aviggiano/telegram-claude-yolo-bot"
+homepage = "https://github.com/aviggiano/telegram-claude-yolo-bot"
+keywords = ["telegram", "bot", "claude", "cli"]
+categories = ["command-line-utilities"]
 readme = "README.md"
 
 [[bin]]
