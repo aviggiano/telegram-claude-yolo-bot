@@ -56,13 +56,19 @@ Start the bot directly:
 telegram-claude-yolo-bot start --token YOUR_BOT_TOKEN --chat-id YOUR_CHAT_ID
 ```
 
-### Using Environment Variables
+### Using .env File (Recommended)
 
-Set environment variables:
+Create a `.env` file in your project directory:
 
 ```bash
-export TELEGRAM_BOT_TOKEN=your_bot_token_here
-export TELEGRAM_CHAT_ID=your_chat_id_here
+cp .env.example .env
+```
+
+Edit the `.env` file with your values:
+
+```env
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_CHAT_ID=your_chat_id_here
 ```
 
 Then start the bot:
@@ -71,11 +77,25 @@ Then start the bot:
 telegram-claude-yolo-bot start
 ```
 
+### Using Environment Variables
+
+Alternatively, set environment variables:
+
+```bash
+export TELEGRAM_BOT_TOKEN=your_bot_token_here
+export TELEGRAM_CHAT_ID=your_chat_id_here
+telegram-claude-yolo-bot start
+```
+
 ### Daemon Installation
 
 Install as a system daemon (requires sudo):
 
 ```bash
+# Using .env file (recommended)
+sudo telegram-claude-yolo-bot install
+
+# Or with CLI arguments
 sudo telegram-claude-yolo-bot install --token YOUR_BOT_TOKEN --chat-id YOUR_CHAT_ID
 ```
 
@@ -108,8 +128,8 @@ sudo telegram-claude-yolo-bot uninstall
 
 ### Command Options
 
-- `--token, -t`: Telegram bot token (or set `TELEGRAM_BOT_TOKEN`)
-- `--chat-id, -c`: Authorized chat ID (or set `TELEGRAM_CHAT_ID`)  
+- `--token, -t`: Telegram bot token (optional if set in .env or environment)
+- `--chat-id, -c`: Authorized chat ID (optional if set in .env or environment)  
 - `--daemon, -d`: Run as daemon process
 
 ## Telegram Bot Commands
@@ -120,11 +140,19 @@ sudo telegram-claude-yolo-bot uninstall
 
 ## Configuration
 
-The bot can be configured using:
+The bot can be configured using (in order of precedence):
 
 1. Command line arguments
-2. Environment variables
-3. Configuration file (stored in `~/.config/telegram-claude-yolo-bot/config.json`)
+2. `.env` file in the current directory
+3. Environment variables
+4. Configuration file (stored in `~/.config/telegram-claude-yolo-bot/config.json`)
+
+### Configuration Priority
+
+Values are loaded in this order (later values override earlier ones):
+1. Environment variables
+2. `.env` file
+3. Command line arguments
 
 ## Development
 

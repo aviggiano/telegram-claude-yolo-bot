@@ -69,7 +69,7 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
                               Send any message to execute Claude commands.";
 
                 bot.send_message(msg.chat.id, warning)
-                    .parse_mode(teloxide::types::ParseMode::Markdown)
+                    .parse_mode(teloxide::types::ParseMode::MarkdownV2)
                     .await?;
             }
         }

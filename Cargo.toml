@@ -23,6 +23,7 @@ log = "0.4"
 env_logger = "0.10"
 dirs = "5.0"
 daemonize = "0.5"
+dotenv = "0.15"
 
 [dev-dependencies]
 tokio-test = "0.4"

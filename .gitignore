@@ -19,5 +19,8 @@ config.json
 .env
 *.log
 
+# Keep example env file
+!.env.example
+
 # Runtime
 *.pid
