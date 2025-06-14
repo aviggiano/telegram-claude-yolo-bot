@@ -26,16 +26,16 @@ This project is based on the original Python implementation by [@devtooligan](ht
 
 ## Installation
 
-### From crates.io
+Install directly from GitHub using cargo:
 
 ```bash
-cargo install telegram-claude-yolo-bot
+cargo install --git https://github.com/aviggiano/telegram-claude-yolo-bot
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/your-username/telegram-claude-yolo-bot
+git clone https://github.com/aviggiano/telegram-claude-yolo-bot
 cd telegram-claude-yolo-bot
 cargo install --path .
 ```
