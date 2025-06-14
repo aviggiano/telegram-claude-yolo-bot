@@ -71,7 +71,7 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
             BotCommand::Help => {
                 let help_text = BotCommand::descriptions().to_string();
                 log_to_screenlog("BOT", &help_text).ok();
-                bot.send_message(msg.chat.id, help_text)
+                bot.send_message(msg.chat.id, escape_markdown_v2(&help_text))
                     .parse_mode(teloxide::types::ParseMode::MarkdownV2)
                     .await?;
             }
@@ -79,7 +79,7 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
                 let start_text =
                     "Claude YOLO Bot is ready! Send any message to execute Claude commands.";
                 log_to_screenlog("BOT", start_text).ok();
-                bot.send_message(msg.chat.id, start_text)
+                bot.send_message(msg.chat.id, escape_markdown_v2(start_text))
                     .parse_mode(teloxide::types::ParseMode::MarkdownV2)
                     .await?;
             }
@@ -124,7 +124,7 @@ async fn execute_claude_command_streaming(prompt: &str, bot: Bot, chat_id: ChatI
 
     // Send initial message to show bot is processing
     let mut current_message = bot
-        .send_message(chat_id, "🤖 Processing...")
+        .send_message(chat_id, escape_markdown_v2("🤖 Processing..."))
         .parse_mode(teloxide::types::ParseMode::MarkdownV2)
         .await?;
 
@@ -209,7 +209,7 @@ async fn execute_claude_command_streaming(prompt: &str, bot: Bot, chat_id: ChatI
     // Send final completion message if no output was received
     if accumulated_output.trim().is_empty() {
         let no_output_msg = "✅ Claude command completed (no output)";
-        bot.edit_message_text(chat_id, current_message.id, no_output_msg)
+        bot.edit_message_text(chat_id, current_message.id, escape_markdown_v2(no_output_msg))
             .parse_mode(teloxide::types::ParseMode::MarkdownV2)
             .await?;
     }

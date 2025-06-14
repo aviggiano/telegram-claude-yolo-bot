@@ -170,7 +170,7 @@ impl AutoUpdater {
             }
 
             // If we reach here, exec failed
-            return Err(anyhow::anyhow!("Failed to execute replacement process"));
+            Err(anyhow::anyhow!("Failed to execute replacement process"))
         } else {
             info!("Not in screen session, using standard restart method");
             // Standard restart for non-screen environments
