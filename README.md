@@ -2,6 +2,10 @@
 
 A Rust-based Telegram bot that bridges Claude CLI interactions, allowing you to interact with Claude through Telegram messages.
 
+## Acknowledgments
+
+This project is based on the original Python implementation by [@devtooligan](https://x.com/devtooligan). You can find the original gist [here](https://gist.github.com/devtooligan/998d1405dfa11085e4d022bb98ded85a).
+
 ## 🚨 Security Warning
 
 **This bot executes Claude commands DIRECTLY on your host system with NO SANDBOXING.**

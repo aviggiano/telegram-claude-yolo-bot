@@ -52,7 +52,7 @@ WantedBy=multi-user.target
     );
 
     let service_path = format!("/etc/systemd/system/{}.service", SERVICE_NAME);
-    
+
     // Check if we have permission to write to systemd directory
     if !has_sudo_access() {
         return Err(anyhow::anyhow!(
@@ -61,20 +61,23 @@ WantedBy=multi-user.target
     }
 
     fs::write(&service_path, service_content)?;
-    
+
     // Reload systemd and enable the service
     Command::new("systemctl")
         .args(&["daemon-reload"])
         .status()?;
-    
+
     Command::new("systemctl")
         .args(&["enable", SERVICE_NAME])
         .status()?;
-    
+
     println!("Service installed at: {}", service_path);
-    println!("To start the service: sudo systemctl start {}", SERVICE_NAME);
+    println!(
+        "To start the service: sudo systemctl start {}",
+        SERVICE_NAME
+    );
     println!("To check status: sudo systemctl status {}", SERVICE_NAME);
-    
+
     Ok(())
 }
 
@@ -89,22 +92,22 @@ pub fn uninstall_daemon() -> Result<()> {
     let _ = Command::new("systemctl")
         .args(&["stop", SERVICE_NAME])
         .status();
-    
+
     let _ = Command::new("systemctl")
         .args(&["disable", SERVICE_NAME])
         .status();
-    
+
     // Remove the service file
     let service_path = format!("/etc/systemd/system/{}.service", SERVICE_NAME);
     if PathBuf::from(&service_path).exists() {
         fs::remove_file(&service_path)?;
     }
-    
+
     // Reload systemd
     Command::new("systemctl")
         .args(&["daemon-reload"])
         .status()?;
-    
+
     Ok(())
 }
 
@@ -112,7 +115,7 @@ pub fn show_status() {
     let output = Command::new("systemctl")
         .args(&["status", SERVICE_NAME, "--no-pager"])
         .output();
-    
+
     match output {
         Ok(output) => {
             println!("{}", String::from_utf8_lossy(&output.stdout));

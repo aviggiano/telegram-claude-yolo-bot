@@ -7,7 +7,10 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 
 #[derive(BotCommands, Clone)]
-#[command(rename_rule = "lowercase", description = "These commands are supported:")]
+#[command(
+    rename_rule = "lowercase",
+    description = "These commands are supported:"
+)]
 enum BotCommand {
     #[command(description = "Display this help message")]
     Help,
@@ -17,23 +20,24 @@ enum BotCommand {
 
 pub async fn start_bot(token: String, authorized_chat_id: i64) -> Result<()> {
     info!("Starting Telegram Claude YOLO Bot...");
-    
+
     let bot = Bot::new(token);
-    
+
     teloxide::repl(bot, move |bot: Bot, msg: Message| {
         let chat_id = authorized_chat_id;
-        async move {
-            handle_message(bot, msg, chat_id).await
-        }
+        async move { handle_message(bot, msg, chat_id).await }
     })
     .await;
-    
+
     Ok(())
 }
 
 async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> ResponseResult<()> {
     if msg.chat.id.0 != authorized_chat_id {
-        warn!("Unauthorized access attempt from chat ID: {}", msg.chat.id.0);
+        warn!(
+            "Unauthorized access attempt from chat ID: {}",
+            msg.chat.id.0
+        );
         return Ok(());
     }
 
@@ -63,7 +67,7 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
                               • Never run on production systems\n\n\
                               **USE AT YOUR OWN RISK!**\n\n\
                               Send any message to execute Claude commands.";
-                
+
                 bot.send_message(msg.chat.id, warning)
                     .parse_mode(teloxide::types::ParseMode::Markdown)
                     .await?;
@@ -97,7 +101,7 @@ async fn handle_message(bot: Bot, msg: Message, authorized_chat_id: i64) -> Resp
 
 async fn execute_claude_command(prompt: &str) -> Result<String> {
     info!("Executing Claude command: {}", prompt);
-    
+
     let mut child = Command::new("claude")
         .arg("--dangerously-skip-permissions")
         .arg("--output-format")
@@ -106,12 +110,12 @@ async fn execute_claude_command(prompt: &str) -> Result<String> {
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()?;
-    
+
     let stdout = child.stdout.take().unwrap();
     let mut reader = BufReader::new(stdout);
     let mut output = String::new();
     let mut line = String::new();
-    
+
     while reader.read_line(&mut line).await? > 0 {
         if let Ok(json_value) = serde_json::from_str::<Value>(&line) {
             if let Some(content) = json_value.get("content") {
@@ -126,11 +130,14 @@ async fn execute_claude_command(prompt: &str) -> Result<String> {
         }
         line.clear();
     }
-    
+
     let exit_status = child.wait().await?;
     if !exit_status.success() {
-        return Err(anyhow::anyhow!("Claude command failed with exit code: {}", exit_status));
+        return Err(anyhow::anyhow!(
+            "Claude command failed with exit code: {}",
+            exit_status
+        ));
     }
-    
+
     Ok(output)
 }

@@ -14,6 +14,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: true
       matrix:
         rust:
           - stable
@@ -65,6 +66,7 @@ jobs:
     name: Build
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         include:
@@ -96,7 +98,7 @@ jobs:
       run: cargo build --release --target ${{ matrix.target }}
     
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: telegram-claude-yolo-bot-${{ matrix.target }}
         path: |

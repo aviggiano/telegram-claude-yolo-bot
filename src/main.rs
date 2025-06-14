@@ -2,8 +2,8 @@ use clap::{Parser, Subcommand};
 use std::process;
 
 mod bot;
-mod daemon;
 mod config;
+mod daemon;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -44,11 +44,15 @@ enum Commands {
 #[tokio::main]
 async fn main() {
     env_logger::init();
-    
+
     let cli = Cli::parse();
-    
+
     match cli.command {
-        Commands::Start { token, chat_id, daemon } => {
+        Commands::Start {
+            token,
+            chat_id,
+            daemon,
+        } => {
             if daemon {
                 if let Err(e) = daemon::start_daemon(token, chat_id).await {
                     eprintln!("Failed to start daemon: {}", e);
