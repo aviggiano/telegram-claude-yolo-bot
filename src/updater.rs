@@ -66,11 +66,13 @@ impl AutoUpdater {
     async fn get_current_commit(&self) -> Result<String> {
         let output = Command::new("git")
             .args(["rev-parse", "HEAD"])
+            .current_dir(std::env::current_dir()?)
             .output()
             .await?;
 
         if !output.status.success() {
-            return Err(anyhow::anyhow!("Failed to get current commit hash"));
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(anyhow::anyhow!("Failed to get current commit hash: {}", stderr));
         }
 
         Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
@@ -79,6 +81,7 @@ impl AutoUpdater {
     async fn fetch_origin(&self) -> Result<()> {
         let output = Command::new("git")
             .args(["fetch", "origin", "main"])
+            .current_dir(std::env::current_dir()?)
             .output()
             .await?;
 
@@ -93,11 +96,13 @@ impl AutoUpdater {
     async fn get_remote_commit(&self) -> Result<String> {
         let output = Command::new("git")
             .args(["rev-parse", "origin/main"])
+            .current_dir(std::env::current_dir()?)
             .output()
             .await?;
 
         if !output.status.success() {
-            return Err(anyhow::anyhow!("Failed to get remote commit hash"));
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(anyhow::anyhow!("Failed to get remote commit hash: {}", stderr));
         }
 
         Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
@@ -109,6 +114,7 @@ impl AutoUpdater {
         // Pull latest changes
         let pull_output = Command::new("git")
             .args(["pull", "origin", "main"])
+            .current_dir(std::env::current_dir()?)
             .output()
             .await?;
 
@@ -122,6 +128,7 @@ impl AutoUpdater {
         // Build the application
         let build_output = Command::new("cargo")
             .args(["build", "--release"])
+            .current_dir(std::env::current_dir()?)
             .output()
             .await?;
 
