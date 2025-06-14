@@ -170,6 +170,42 @@ This project is based on the original Python implementation by [@devtooligan](ht
 
 **USE AT YOUR OWN RISK!**
 
+## Auto-Update Feature
+
+The bot includes automatic update functionality that:
+
+- **Monitors for updates**: Checks the main branch every 5 minutes for new commits
+- **Auto-restarts**: Automatically pulls changes, rebuilds, and restarts when updates are detected
+- **Zero-downtime updates**: Seamlessly updates the bot without manual intervention
+
+### How it works:
+
+1. The bot periodically fetches from `origin/main`
+2. Compares current commit hash with remote commit hash
+3. If changes are detected:
+   - Pulls the latest changes
+   - Rebuilds the application with `cargo build --release`
+   - Restarts the bot process
+
+### Service Installation (Recommended)
+
+For production use, install as a systemd service:
+
+```bash
+# Copy the service file
+sudo cp telegram-claude-yolo-bot.service /etc/systemd/system/
+
+# Reload systemd and enable the service
+sudo systemctl daemon-reload
+sudo systemctl enable telegram-claude-yolo-bot
+sudo systemctl start telegram-claude-yolo-bot
+
+# Check status
+sudo systemctl status telegram-claude-yolo-bot
+```
+
+This ensures the bot automatically starts on boot and restarts on crashes or updates.
+
 ## Disclaimer
 
 This software is provided "as is" without warranty. The authors are not responsible for any damage or security breaches that may occur from using this software. Use at your own risk and always follow security best practices.

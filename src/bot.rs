@@ -5,6 +5,7 @@ use tokio::process::Command;
 use std::fs::OpenOptions;
 use std::io::Write;
 use chrono::Utc;
+use crate::updater::AutoUpdater;
 
 #[derive(BotCommands, Clone)]
 #[command(
@@ -22,6 +23,12 @@ pub async fn start_bot(token: String, authorized_chat_id: i64) -> Result<()> {
     info!("Starting Telegram Claude YOLO Bot...");
 
     let bot = Bot::new(token);
+
+    // Start auto-updater in background (check every 5 minutes)
+    let updater = AutoUpdater::new(5);
+    tokio::spawn(async move {
+        updater.start_monitoring().await;
+    });
 
     teloxide::repl(bot, move |bot: Bot, msg: Message| {
         let chat_id = authorized_chat_id;

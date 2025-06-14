@@ -4,6 +4,7 @@ use std::process;
 
 mod bot;
 mod config;
+mod updater;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
