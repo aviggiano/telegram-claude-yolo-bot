@@ -15,14 +15,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Start the Telegram bot
-    Start {
-        /// Telegram bot token (optional if set in .env)
-        #[arg(short, long)]
-        token: Option<String>,
-        /// Authorized chat ID (optional if set in .env)
-        #[arg(short, long)]
-        chat_id: Option<i64>,
-    },
+    Start,
 }
 
 #[tokio::main]
@@ -35,8 +28,8 @@ async fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Start { token, chat_id } => {
-            let (token, chat_id) = match get_config_values(token, chat_id) {
+        Commands::Start => {
+            let (token, chat_id) = match get_config_values() {
                 Ok(values) => values,
                 Err(e) => {
                     eprintln!("Configuration error: {}", e);
@@ -52,25 +45,14 @@ async fn main() {
     }
 }
 
-fn get_config_values(
-    token_arg: Option<String>,
-    chat_id_arg: Option<i64>,
-) -> Result<(String, i64), String> {
-    let token = token_arg
-        .or_else(|| env::var("TELEGRAM_BOT_TOKEN").ok())
-        .ok_or_else(|| {
-            "Telegram bot token not provided. Set TELEGRAM_BOT_TOKEN environment variable or use --token".to_string()
-        })?;
+fn get_config_values() -> Result<(String, i64), String> {
+    let token = env::var("TELEGRAM_BOT_TOKEN")
+        .map_err(|_| "Telegram bot token not provided. Set TELEGRAM_BOT_TOKEN environment variable".to_string())?;
 
-    let chat_id = chat_id_arg
-        .or_else(|| {
-            env::var("TELEGRAM_CHAT_ID")
-                .ok()
-                .and_then(|s| s.parse::<i64>().ok())
-        })
-        .ok_or_else(|| {
-            "Telegram chat ID not provided. Set TELEGRAM_CHAT_ID environment variable or use --chat-id".to_string()
-        })?;
+    let chat_id = env::var("TELEGRAM_CHAT_ID")
+        .map_err(|_| "Telegram chat ID not provided. Set TELEGRAM_CHAT_ID environment variable".to_string())?
+        .parse::<i64>()
+        .map_err(|_| "Invalid TELEGRAM_CHAT_ID format. Must be a valid integer".to_string())?;
 
     Ok((token, chat_id))
 }

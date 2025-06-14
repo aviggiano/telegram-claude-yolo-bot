@@ -2,28 +2,6 @@
 
 A Rust-based Telegram bot that bridges Claude CLI interactions, allowing you to interact with Claude through Telegram messages.
 
-## Acknowledgments
-
-This project is based on the original Python implementation by [@devtooligan](https://x.com/devtooligan). You can find the original gist [here](https://gist.github.com/devtooligan/998d1405dfa11085e4d022bb98ded85a).
-
-## 🚨 Security Warning
-
-**This bot executes Claude commands DIRECTLY on your host system with NO SANDBOXING.**
-
-### Potential Risks:
-- **Full system compromise** - Claude can execute ANY command on your system
-- **Data exfiltration** - Access to all files and system resources  
-- **Remote code execution** - Potential for malicious code execution
-- **Privilege escalation** - Commands run with your user privileges
-
-### Recommended Precautions:
-- Run in an isolated Docker container or VM
-- Use a dedicated, restricted user account
-- Monitor all system activity
-- Never run on production systems
-
-**USE AT YOUR OWN RISK!**
-
 ## Installation
 
 Install directly from GitHub using cargo:
@@ -47,14 +25,6 @@ cargo install --path .
 3. **Chat ID**: Get your Telegram chat ID (you can use [@userinfobot](https://t.me/userinfobot))
 
 ## Usage
-
-### Basic Usage
-
-Start the bot directly:
-
-```bash
-telegram-claude-yolo-bot start --token YOUR_BOT_TOKEN --chat-id YOUR_CHAT_ID
-```
 
 ### Using .env File (Recommended)
 
@@ -100,10 +70,6 @@ This will:
 |---------|-------------|
 | `start` | Start the Telegram bot |
 
-### Command Options
-
-- `--token, -t`: Telegram bot token (optional if set in .env or environment)
-- `--chat-id, -c`: Authorized chat ID (optional if set in .env or environment)
 
 ## Telegram Bot Commands
 
@@ -113,19 +79,16 @@ This will:
 
 ## Configuration
 
-The bot can be configured using (in order of precedence):
+The bot can be configured using:
 
-1. Command line arguments
-2. `.env` file in the current directory
-3. Environment variables
-4. Configuration file (stored in `~/.config/telegram-claude-yolo-bot/config.json`)
+1. `.env` file in the current directory
+2. Environment variables
 
 ### Configuration Priority
 
 Values are loaded in this order (later values override earlier ones):
 1. Environment variables
 2. `.env` file
-3. Command line arguments
 
 ## Development
 
@@ -184,6 +147,28 @@ docker run -e TELEGRAM_BOT_TOKEN=your_token -e TELEGRAM_CHAT_ID=your_chat_id tel
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+This project is based on the original Python implementation by [@devtooligan](https://x.com/devtooligan). You can find the original gist [here](https://gist.github.com/devtooligan/998d1405dfa11085e4d022bb98ded85a).
+
+## 🚨 Security Warning
+
+**This bot executes Claude commands DIRECTLY on your host system with NO SANDBOXING.**
+
+### Potential Risks:
+- **Full system compromise** - Claude can execute ANY command on your system
+- **Data exfiltration** - Access to all files and system resources  
+- **Remote code execution** - Potential for malicious code execution
+- **Privilege escalation** - Commands run with your user privileges
+
+### Recommended Precautions:
+- Run in an isolated Docker container or VM
+- Use a dedicated, restricted user account
+- Monitor all system activity
+- Never run on production systems
+
+**USE AT YOUR OWN RISK!**
 
 ## Disclaimer
 
