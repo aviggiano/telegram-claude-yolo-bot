@@ -102,11 +102,33 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install cargo-edit
+      - name: Install dependencies
         run: cargo install cargo-edit
 
+      - name: Check if version already published
+        id: version_check
+        run: |
+          CURRENT_VERSION=$(grep '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          # Check if this version already exists on crates.io
+          if cargo search telegram-claude-yolo-bot --limit 1 | grep -q "telegram-claude-yolo-bot = \"$CURRENT_VERSION\""; then
+            echo "Version $CURRENT_VERSION already published, bumping version"
+            echo "needs_bump=true" >> $GITHUB_OUTPUT
+          else
+            echo "Version $CURRENT_VERSION not published yet"
+            echo "needs_bump=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Bump version
-        run: cargo set-version --bump patch
+        if: steps.version_check.outputs.needs_bump == 'true'
+        run: |
+          cargo set-version --bump patch
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add Cargo.toml
+          git commit -m "Bump version for release"
+          git push
 
       - name: Publish to crates.io
         env:
